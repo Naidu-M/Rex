@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BOMDAS Arena</title>
+<title>BODMAS Arena</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 
@@ -173,12 +173,12 @@
   <div class="wrap">
     <div class="topbar">
       <a class="home-btn" href="index.html">🏠 Home</a>
-      <span class="tag">BOMDAS • Order of Operations</span>
+      <span class="tag">BODMAS • Order of Operations</span>
     </div>
 
     <section class="card">
       <div class="head">
-        <h1 class="title">BOMDAS Arena</h1>
+        <h1 class="title">BODMAS Arena</h1>
         <span class="badge">Easy → Medium → Hard • 50 Questions</span>
       </div>
 
@@ -437,7 +437,7 @@ function showReport(endedEarly){
   ui.modal.classList.add('show');
 
   // Save attempt for home page history
-  const payload = { topic:'BOMDAS', score:game.score, accuracy, total:MAX_Q };
+  const payload = { topic:'BODMAS', score:game.score, accuracy, total:MAX_Q };
   try{
     const KEY='rexmath_attempts';
     const list = JSON.parse(localStorage.getItem(KEY)) || [];
@@ -480,5 +480,6 @@ setQuestion();
 
 </body>
 </html>
+
 
 
