@@ -218,6 +218,16 @@ document.getElementById("end").addEventListener("click",()=>{if(confirm("End pra
 
 genQ();
 </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .catch(console.error);
+    });
+  }
+</script>
+
 </body>
 </html>
+
 
