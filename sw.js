@@ -10,7 +10,7 @@ const PRECACHE_FILES = [
   'placevalue.html',
   'factor_multiple.html',
   'prime_composite.html',
-  'Bomdas.html',
+  'Bodmas.html',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png'
