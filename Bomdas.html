@@ -469,6 +469,16 @@ document.getElementById('end').addEventListener('click', ()=>{
 updateHud();
 setQuestion();
 </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .catch(console.error);
+    });
+  }
+</script>
+
 </body>
 </html>
+
 
