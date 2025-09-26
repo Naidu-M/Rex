@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rex-Math • Worlds Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Brand & base */
+    --bg-top:#eaf4ff; --bg-bottom:#f7fbff;         /* soft sky */
+    --panel:#ffffff; --ink:#0f172a; --sub:#5f6c86;  /* text */
+    --line:#dbe6fb; --stud:#cfe0ff;                /* borders/studs */
+    --accent:#2563eb;                              /* brand blue */
+    --pv:#3b82f6; --fm:#10b981; --pc:#7c3aed; --bo:#f59e0b; /* topic accents */
+
+    --radius-lg:22px; --radius-md:16px;
+    --shadow-1:0 10px 0 #cfdaf5, 0 10px 26px rgba(20,32,70,.08);
+    --shadow-2:0 14px 0 #cfdaf5, 0 16px 36px rgba(20,32,70,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1000px 560px at 75% -10%, #ffffffaa 0%, #ffffff00 60%),
+      linear-gradient(180deg,var(--bg-top),var(--bg-bottom));
+  }
+
+  /* Subtle clouds */
+  .clouds{position:fixed; inset:0; pointer-events:none; z-index:-1; opacity:.5}
+  .clouds svg{position:absolute; width:70vw; max-width:900px; filter:blur(.6px)}
+  .clouds .c1{top:4rem; left:-20vw; animation:drift 52s linear infinite}
+  .clouds .c2{top:10rem; left:-30vw; animation:drift 64s linear infinite}
+  @keyframes drift{from{transform:translateX(0)} to{transform:translateX(140vw)}}
+  @media (prefers-reduced-motion:reduce){ .clouds .c1,.clouds .c2{animation:none} }
+
+  /* Stud plate hint */
+  .studs{
+    position:fixed; inset:0; pointer-events:none; z-index:-1; opacity:.35;
+    background:
+      radial-gradient(circle 3px at 10px 10px, var(--stud) 42%, #0000 43%) 0 0/26px 26px,
+      radial-gradient(circle 3px at 23px 23px, var(--stud) 42%, #0000 43%) 0 0/26px 26px;
+  }
+
+  .wrap{max-width:1200px; margin:56px auto; padding:0 18px}
+
+  /* HERO */
+  .hero{
+    display:grid; grid-template-columns:1fr auto; gap:24px; align-items:center;
+    background:var(--panel); border:3px solid var(--line); border-radius:var(--radius-lg); padding:22px 22px;
+    box-shadow:var(--shadow-1);
+  }
+  @media (max-width:880px){ .hero{grid-template-columns:1fr} }
+
+  h1{
+    font:800 42px/1.08 "Plus Jakarta Sans",Inter,sans-serif; margin:0 0 6px; letter-spacing:.2px;
+  }
+  .sub{margin:0; color:var(--sub); font-weight:600}
+  .avatar{
+    width:110px; height:110px; border-radius:18px; background:#fff; border:3px solid var(--line);
+    display:grid; place-items:center; font:800 40px/1 "Plus Jakarta Sans"; color:var(--accent);
+    box-shadow:var(--shadow-1); transform:rotate(-5deg)
+  }
+
+  /* LAYOUT: worlds + history */
+  .layout{display:grid; grid-template-columns:2fr 1fr; gap:18px; margin-top:18px}
+  @media (max-width:1024px){ .layout{grid-template-columns:1fr} }
+
+  .panel{background:#fff; border:3px solid var(--line); border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow-1)}
+
+  /* WORLDS GRID */
+  .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
+  @media (max-width:1150px){ .grid{grid-template-columns:repeat(3,1fr)} }
+  @media (max-width:820px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:520px){ .grid{grid-template-columns:1fr} }
+
+  .world{
+    position:relative; text-decoration:none; color:inherit;
+    display:flex; gap:12px; align-items:flex-start;
+    background:#fff; border:3px solid var(--line); border-radius:var(--radius-md); padding:16px;
+    box-shadow:var(--shadow-1);
+    transition:transform .12s ease, box-shadow .12s ease, filter .12s ease, border-color .12s ease;
+    min-height:84px;
+  }
+  .world:hover{transform:translateY(-2px); box-shadow:var(--shadow-2); filter:saturate(1.03); border-color:#d3e0fb}
+  .world:active{transform:translateY(1px)}
+  .world:focus-visible{outline:3px solid #93b3ff; outline-offset:3px}
+
+  .world::before{
+    /* studs strip */
+    content:""; position:absolute; inset:0 0 auto 0; height:16px; border-radius:12px 12px 0 0;
+    background:
+      radial-gradient(circle 3px at 10px 8px, var(--line) 40%, #0000 41%) 0 0/24px 16px,
+      radial-gradient(circle 3px at 22px 8px, var(--line) 40%, #0000 41%) 0 0/24px 16px,
+      #f6faff;
+  }
+
+  .icon{
+    flex:0 0 46px; height:46px; border-radius:12px; display:grid; place-items:center; color:#fff; font-size:22px; font-weight:900
+  }
+  .pv .icon{background:var(--pv)} .fm .icon{background:var(--fm)} .pc .icon{background:var(--pc)} .bo .icon{background:var(--bo)}
+  .w-title{font:800 18px/1.15 "Plus Jakarta Sans",Inter; margin-top:2px}
+  .w-desc{color:var(--sub); font-weight:600; font-size:13px; margin-top:2px}
+
+  /* HISTORY (simple) */
+  .history h3{font:800 18px/1.2 Inter; margin:2px 2px 12px}
+  .list{display:grid; gap:10px}
+  .row{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px 12px
+  }
+  .meta{font-weight:800}
+  .meta small{display:block; color:#6c7a96; font-weight:700}
+  .val{font-weight:800; color:#0f172a}
+  .controls{display:flex; justify-content:flex-end; margin-top:10px}
+  .btn{
+    appearance:none; border:2px solid var(--line); background:#fff; border-radius:999px; padding:8px 12px;
+    font-weight:800; cursor:pointer; transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 8px 16px rgba(20,32,70,.08)}
+  .btn:active{transform:translateY(0)}
+
+  .foot{margin-top:18px; text-align:center; color:#8090a8; font-size:12.5px}
+
+  /* Touch target comfort on small screens */
+  @media (max-width:480px){
+    .world{min-height:92px; padding:18px}
+    .icon{width:50px; height:50px; font-size:24px}
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion:reduce){
+    .world{transition:none}
+    .world:hover{transform:none}
+    .clouds .c1,.clouds .c2{animation:none}
+  }
+</style>
+</head>
+<body>
+  <!-- Background touches -->
+  <div class="clouds" aria-hidden="true">
+    <svg class="c1" viewBox="0 0 600 200" preserveAspectRatio="none"><path fill="#fff" d="M0 150 Q 60 120 120 150 T 240 150 T 360 150 T 480 150 T 600 150 L600 220 L0 220 Z"/></svg>
+    <svg class="c2" viewBox="0 0 600 200" preserveAspectRatio="none"><path fill="#fff" d="M0 140 Q 70 110 140 140 T 280 140 T 420 140 T 560 140 L600 220 L0 220 Z"/></svg>
+  </div>
+  <div class="studs" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <h1 id="hero-title">Welcome Rex</h1>
+        <p class="sub">Pick a world and start practicing.</p>
+      </div>
+      <div class="avatar" aria-hidden="true">R</div>
+    </section>
+
+    <!-- WORLDS + SIMPLE HISTORY -->
+    <div class="layout">
+      <section class="panel" aria-label="Practice worlds">
+        <nav class="grid" aria-label="Math worlds">
+          <a class="world pv" href="placevalue.html">
+            <div class="icon">🧱</div>
+            <div><div class="w-title">Place Value</div><div class="w-desc">Whole & decimals</div></div>
+          </a>
+          <a class="world fm" href="factor_multiple.html">
+            <div class="icon">🔗</div>
+            <div><div class="w-title">Factors & Multiples</div><div class="w-desc">Find factors & LCM</div></div>
+          </a>
+          <a class="world pc" href="prime_composite.html">
+            <div class="icon">🔢</div>
+            <div><div class="w-title">Prime & Composite</div><div class="w-desc">Prime tests</div></div>
+          </a>
+          <a class="world bo" href="Bomdas.html">
+            <div class="icon">🧮</div>
+            <div><div class="w-title">BODMAS</div><div class="w-desc">Order of operations</div></div>
+          </a>
+        </nav>
+      </section>
+
+      <aside class="panel history" aria-labelledby="hist-title">
+        <h3 id="hist-title">Previous Attempts</h3>
+        <div id="list" class="list" aria-live="polite"></div>
+        <div class="controls"><button class="btn" id="clear">Clear</button></div>
+      </aside>
+    </div>
+
+    <p class="foot">© Rex-Math • Simple, responsive, and kid-friendly</p>
+  </div>
+
+  <script>
+    /* ---------------- Minimal attempt store ----------------
+       Each practice page should save a record at the end like:
+       (Change topic per page)
+       const payload = { topic:'Place Value', score:420, accuracy:84, total:50 };
+       // Save locally:
+       try {
+         const KEY='rexmath_attempts';
+         const list = JSON.parse(localStorage.getItem(KEY)) || [];
+         list.unshift({ ...payload, when: new Date().toISOString() });
+         localStorage.setItem(KEY, JSON.stringify(list.slice(0,50)));
+       } catch(e) {}
+       // Optionally notify an open hub:
+       if (window.opener && typeof window.opener.saveRexAttempt==='function') {
+         window.opener.saveRexAttempt(payload);
+       }
+    -------------------------------------------------------- */
+
+    const KEY = 'rexmath_attempts';
+    function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
+    function save(arr){ localStorage.setItem(KEY, JSON.stringify(arr.slice(0,50))); }
+    function add(e){
+      const safe = {
+        topic: e.topic || 'Unknown',
+        score: Number(e.score)||0,
+        accuracy: Number(e.accuracy)||0,
+        total: Number(e.total)||50,
+        when: new Date().toISOString()
+      };
+      const items = load(); items.unshift(safe); save(items);
+    }
+    // Expose so practice pages can call window.opener.saveRexAttempt(...)
+    window.saveRexAttempt = add;
+
+    function fmt(iso){ try{ return new Date(iso).toLocaleString(); } catch(_){ return iso||''; } }
+    function render(){
+      const el = document.getElementById('list');
+      const items = load().slice(0,5);
+      el.innerHTML = items.length ? items.map(a => `
+        <div class="row">
+          <div class="meta">${a.topic}<small>${fmt(a.when)}</small></div>
+          <div class="val">${a.score}/${a.total} • ${a.accuracy}%</div>
+        </div>
+      `).join('') : `
+        <div class="row">
+          <div class="meta">No attempts yet<small>Finish a session to see it here</small></div>
+          <div class="val">—</div>
+        </div>`;
+    }
+    render();
+
+    document.getElementById('clear').addEventListener('click', ()=>{
+      if(confirm('Clear previous attempts?')){ save([]); render(); }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prime & Composite Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Unified theme (same as Place Value / Factors) */
+    --bg-top:#eaf4ff; --bg-bottom:#f7fbff;
+    --panel:#ffffff; --ink:#0f172a; --sub:#5f6c86;
+    --line:#dbe6fb; --stud:#cfe0ff;
+    --topic:#8B5CF6;            /* accent for Prime & Composite (purple) */
+    --good:#10b981; --bad:#ef4444; --gold:#f59e0b;
+
+    --r-lg:22px; --r-md:16px;
+    --shadow-1:0 10px 0 #cfdaf5, 0 10px 26px rgba(20,32,70,.08);
+    --shadow-2:0 14px 0 #cfdaf5, 0 16px 36px rgba(20,32,70,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1000px 560px at 75% -10%, #ffffffaa 0%, #ffffff00 60%),
+      linear-gradient(180deg,var(--bg-top),var(--bg-bottom));
+  }
+
+  /* studs background */
+  .studs{position:fixed; inset:0; pointer-events:none; z-index:-1; opacity:.35;
+    background:
+      radial-gradient(circle 3px at 10px 10px, var(--stud) 42%, #0000 43%) 0 0/26px 26px,
+      radial-gradient(circle 3px at 23px 23px, var(--stud) 42%, #0000 43%) 0 0/26px 26px;
+  }
+
+  .wrap{max-width:1100px; margin:54px auto; padding:0 18px}
+
+  /* top bar */
+  .topbar{display:flex; align-items:center; gap:12px; margin-bottom:14px}
+  .home-btn{
+    appearance:none; border:3px solid var(--line); background:#fff; color:#0f172a;
+    border-radius:999px; padding:10px 14px; font-weight:800; text-decoration:none;
+    box-shadow:var(--shadow-1); display:inline-flex; align-items:center; gap:8px;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .home-btn:hover{transform:translateY(-1px); box-shadow:var(--shadow-2)}
+  .home-btn:active{transform:translateY(0)}
+  .tag{font-weight:800; color:#4b5d7f}
+
+  /* card */
+  .card{
+    background:var(--panel); border:3px solid var(--line); border-radius:var(--r-lg); padding:18px;
+    box-shadow:var(--shadow-1);
+  }
+
+  /* header block */
+  .head{
+    display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px
+  }
+  .title{
+    font:800 28px/1.15 "Plus Jakarta Sans",Inter,sans-serif; margin:0;
+    display:flex; align-items:center; gap:10px;
+  }
+  .badge{
+    display:inline-flex; gap:8px; align-items:center; padding:8px 12px;
+    border:2px solid var(--line); background:#f6faff; border-radius:999px; font-weight:800; color:#4c1d95;
+  }
+
+  /* stats */
+  .stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px
+  }
+  @media (max-width:680px){ .stats{grid-template-columns:repeat(2,1fr)} }
+  .stat{
+    background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px 12px; text-align:center; font-weight:800
+  }
+  .stat small{display:block; color:var(--sub); font-weight:700}
+
+  /* progress bar */
+  .bar{background:#f2f6ff; border:2px solid var(--line); border-radius:12px; height:22px; overflow:hidden; margin-bottom:14px}
+  .fill{
+    height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--topic));
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:12px;
+    transition:width .35s ease;
+  }
+
+  /* question area */
+  .qbox{
+    background:linear-gradient(180deg,#f4f0ff,#ffffff);
+    border:3px solid var(--line); border-radius:var(--r-md); padding:18px; text-align:center;
+  }
+  .q-text{font-weight:800; color:#1d3350; margin-bottom:10px}
+  .number{
+    font:800 38px/1.2 "Plus Jakarta Sans",Inter; color:var(--topic);
+    background:#fff; border:3px solid #e3d9ff; border-radius:14px; padding:12px 16px; display:inline-block; margin:10px 0 14px
+  }
+
+  .actions{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:6px}
+  .btn{
+    appearance:none; border:0; border-radius:12px; padding:12px 18px; font-weight:800; cursor:pointer;
+    color:#fff; background:var(--topic); box-shadow:0 6px 0 #c1b3ff; transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 10px 0 #c1b3ff}
+  .btn:active{transform:translateY(0); box-shadow:0 4px 0 #c1b3ff}
+  .btn-green{background:#22c55e; box-shadow:0 6px 0 #93e7b0}
+  .btn-green:hover{box-shadow:0 10px 0 #93e7b0}
+  .btn-ghost{
+    background:#fff; color:#0f172a; border:3px solid var(--line); box-shadow:var(--shadow-1)
+  }
+
+  .feedback{min-height:56px; margin-top:10px; font-weight:800}
+  .ok{color:var(--good)} .no{color:var(--bad)}
+  .exp{
+    margin:10px auto 0; padding:12px; max-width:680px; text-align:left;
+    background:#fff; border:2px solid #ffe29c; border-radius:12px; color:#1f2937; font-weight:700
+  }
+
+  /* report modal */
+  .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(9,15,30,.65); z-index:1000}
+  .modal.show{display:grid}
+  .sheet{
+    background:linear-gradient(180deg,#f3efff,#ffffff);
+    width:min(92vw,560px); border:4px solid var(--line); border-radius:22px; padding:22px;
+    box-shadow:0 30px 80px rgba(9,20,50,.35);
+    text-align:center;
+  }
+  .sheet h2{font:800 26px/1.2 "Plus Jakarta Sans"; margin:0 0 10px; color:#2e1065}
+  .stats-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0 6px}
+  .pill{background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px; font-weight:800}
+  .note{color:#5f6c86; font-weight:700; margin-top:8px}
+  .modal-actions{display:flex; gap:10px; justify-content:center; margin-top:12px}
+
+  /* mobile tweaks */
+  @media (max-width:480px){
+    .number{font-size:32px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .fill{transition:none}
+    .btn,.home-btn{transition:none}
+  }
+</style>
+</head>
+<body>
+  <div class="studs" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <a class="home-btn" href="index.html">🏠 Home</a>
+      <span class="tag">Prime & Composite</span>
+    </div>
+
+    <section class="card">
+      <div class="head">
+        <h1 class="title">Prime & Composite Explorer</h1>
+        <span class="badge">Easy → Medium → Hard • 50 Questions</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat">Score <small id="score">0</small></div>
+        <div class="stat">Question <small><span id="qNum">1</span>/50</small></div>
+        <div class="stat">Streak <small id="streak">0</small></div>
+        <div class="stat">Stage <small id="stage">🌱 Easy</small></div>
+      </div>
+
+      <!-- Progress -->
+      <div class="bar"><div id="barFill" class="fill">0%</div></div>
+
+      <!-- Question -->
+      <div class="qbox">
+        <div class="q-text">Is this number <strong>Prime</strong> or <strong>Composite</strong>?</div>
+        <div id="num" class="number">7</div>
+
+        <div class="actions">
+          <button id="primeBtn" class="btn">Prime 🔢</button>
+          <button id="compBtn" class="btn btn-green">Composite 🧮</button>
+        </div>
+
+        <div class="actions" style="margin-top:10px">
+          <button id="end" class="btn btn-ghost">End Practice ❌</button>
+        </div>
+
+        <div id="fb" class="feedback"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Report Modal -->
+  <div id="reportModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+    <div class="sheet">
+      <h2 id="reportTitle">Explorer Report</h2>
+      <div id="reportNote" class="note"></div>
+      <div class="stats-grid">
+        <div class="pill">Final Score<br><span id="rScore">0</span></div>
+        <div class="pill">Correct<br><span id="rCorrect">0</span>/50</div>
+        <div class="pill">Accuracy<br><span id="rAcc">0%</span></div>
+        <div class="pill">Stage Reached<br><span id="rStage">Easy</span></div>
+      </div>
+      <div id="tip" class="note"></div>
+      <div class="modal-actions">
+        <a href="index.html" class="home-btn">🏠 Return Home</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /* =========================
+     STATE & SETTINGS
+  ==========================*/
+  const MAX_Q = 50;
+
+  const levels = {
+    easy:   { name:'🌱 Easy',   min:2,  max:20,  showHints:true },
+    medium: { name:'⭐ Medium', min:11, max:60,  showHints:true },
+    hard:   { name:'👑 Hard',   min:41, max:120, showHints:false }
+  };
+
+  const ui = {
+    score:   document.getElementById('score'),
+    qNum:    document.getElementById('qNum'),
+    streak:  document.getElementById('streak'),
+    stage:   document.getElementById('stage'),
+    barFill: document.getElementById('barFill'),
+    num:     document.getElementById('num'),
+    fb:      document.getElementById('fb'),
+    modal:   document.getElementById('reportModal'),
+    rScore:  document.getElementById('rScore'),
+    rCorrect:document.getElementById('rCorrect'),
+    rAcc:    document.getElementById('rAcc'),
+    rStage:  document.getElementById('rStage'),
+    note:    document.getElementById('reportNote'),
+    tip:     document.getElementById('tip'),
+    prime:   document.getElementById('primeBtn'),
+    comp:    document.getElementById('compBtn'),
+  };
+
+  let game = {
+    q:1, score:0, streak:0, correct:0, answered:0,
+    stage:'easy',
+    current: 7,
+    isPrime: true
+  };
+
+  function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+  function isPrime(n){
+    if(n<2) return false;
+    if(n===2) return true;
+    if(n%2===0) return false;
+    for(let i=3;i*i<=n;i+=2){ if(n%i===0) return false; }
+    return true;
+  }
+  function factors(n){
+    const out=[]; for(let i=1;i<=n;i++) if(n%i===0) out.push(i); return out;
+  }
+
+  function updateStage(){
+    if (game.q <= 15) game.stage = 'easy';
+    else if (game.q <= 35) game.stage = 'medium';
+    else game.stage = 'hard';
+    ui.stage.textContent = levels[game.stage].name;
+  }
+
+  function setQuestion(){
+    updateStage();
+    const {min,max} = levels[game.stage];
+    game.current = rand(min, max);
+    game.isPrime = isPrime(game.current);
+
+    ui.num.textContent = game.current;
+    ui.fb.innerHTML = '';
+
+    // re-enable buttons
+    ui.prime.disabled = false;
+    ui.comp.disabled = false;
+
+    updateHud();
+  }
+
+  function updateHud(){
+    ui.score.textContent = game.score;
+    ui.qNum.textContent = game.q;
+    ui.streak.textContent = game.streak;
+
+    const pct = Math.round(((game.q - 1) / MAX_Q) * 100);
+    ui.barFill.style.width = pct + '%';
+    ui.barFill.textContent = pct + '%';
+  }
+
+  function handleAnswer(choice){
+    // disable to prevent double clicks
+    ui.prime.disabled = true;
+    ui.comp.disabled = true;
+
+    const ok = (choice === 'prime' && game.isPrime) || (choice === 'comp' && !game.isPrime);
+    const fac = factors(game.current);
+    const label = game.isPrime ? 'Prime' : 'Composite';
+
+    if (ok){
+      game.score += 10;
+      game.streak++;
+      game.correct++;
+      let msg = 'Great! +10';
+      if (game.streak >= 5){ game.score += 5; msg += ' (+5 streak)'; }
+      ui.fb.innerHTML = `<div class="ok">${msg}</div><div class="exp">${game.current} is ${label}. Factors: ${fac.join(', ')}</div>`;
+    } else {
+      game.streak = 0;
+      ui.fb.innerHTML = `<div class="no">Not quite.</div><div class="exp">${game.current} is ${label}. It has ${fac.length} factors: ${fac.join(', ')}</div>`;
+    }
+
+    game.answered++;
+    updateHud();
+
+    setTimeout(()=>{
+      game.q++;
+      if (game.q > MAX_Q){
+        showReport(false);
+        resetGame();
+      } else {
+        setQuestion();
+      }
+    }, 1600);
+  }
+
+  /* ============== REPORT & SAVE ============== */
+  function showReport(endedEarly){
+    const accuracy = game.answered > 0 ? Math.round((game.correct / game.answered) * 100) : 0;
+    ui.rScore.textContent = game.score;
+    ui.rCorrect.textContent = `${game.correct}`;
+    ui.rAcc.textContent = `${accuracy}%`;
+    ui.rStage.textContent = levels[game.stage].name.replace(/^[^A-Za-z0-9]+/,'');
+    ui.note.textContent = endedEarly
+      ? `Practice ended early after ${game.answered} of ${MAX_Q} questions.`
+      : `Great work completing all ${MAX_Q} questions!`;
+
+    let tip = '';
+    if (accuracy >= 90) tip = 'Speed tip: test divisibility only up to √n (and only with primes).';
+    else if (accuracy >= 75) tip = 'Check small primes first: 2, 3, 5, 7, 11.';
+    else tip = 'Composite numbers have more than 2 factors; primes have exactly 2 (1 and itself).';
+    ui.tip.textContent = tip;
+
+    ui.modal.classList.add('show');
+
+    // Save attempt so hub can show Previous Attempts
+    const payload = { topic:'Prime & Composite', score:game.score, accuracy, total:MAX_Q };
+    try{
+      const KEY='rexmath_attempts';
+      const list = JSON.parse(localStorage.getItem(KEY)) || [];
+      list.unshift({ ...payload, when:new Date().toISOString() });
+      localStorage.setItem(KEY, JSON.stringify(list.slice(0,50)));
+    }catch(e){}
+    if (window.opener && typeof window.opener.saveRexAttempt === 'function'){
+      window.opener.saveRexAttempt(payload);
+    }
+  }
+
+  function resetGame(){
+    game = { q:1, score:0, streak:0, correct:0, answered:0, stage:'easy', current:7, isPrime:true };
+  }
+
+  /* ============== EVENTS ============== */
+  document.getElementById('primeBtn').addEventListener('click', ()=>handleAnswer('prime'));
+  document.getElementById('compBtn').addEventListener('click',  ()=>handleAnswer('comp'));
+
+  // End Practice flow
+  document.getElementById('end').addEventListener('click', ()=>{
+    if (confirm('Are you sure you want to end practice early?')){
+      showReport(true);
+      resetGame();
+    } else {
+      // re-enable buttons if cancelled
+      ui.prime.disabled = false;
+      ui.comp.disabled = false;
+    }
+  });
+
+  // Init
+  updateHud();
+  setQuestion();
+</script>
+</body>
+</html>

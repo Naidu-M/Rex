@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BOMDAS Arena</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Unified suite palette */
+    --bg-top:#eaf4ff; --bg-bottom:#f7fbff;
+    --panel:#ffffff; --ink:#0f172a; --sub:#5f6c86;
+    --line:#dbe6fb; --stud:#cfe0ff;
+    --topic:#F97316;            /* orange accent for BOMDAS */
+    --good:#10b981; --bad:#ef4444; --gold:#f59e0b;
+
+    --r-lg:22px; --r-md:16px;
+    --shadow-1:0 10px 0 #cfdaf5, 0 10px 26px rgba(20,32,70,.08);
+    --shadow-2:0 14px 0 #cfdaf5, 0 16px 36px rgba(20,32,70,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1000px 560px at 75% -10%, #ffffffaa 0%, #ffffff00 60%),
+      linear-gradient(180deg,var(--bg-top),var(--bg-bottom));
+  }
+
+  /* studs */
+  .studs{position:fixed; inset:0; pointer-events:none; z-index:-1; opacity:.35;
+    background:
+      radial-gradient(circle 3px at 10px 10px, var(--stud) 42%, #0000 43%) 0 0/26px 26px,
+      radial-gradient(circle 3px at 23px 23px, var(--stud) 42%, #0000 43%) 0 0/26px 26px;
+  }
+
+  .wrap{max-width:1100px; margin:54px auto; padding:0 18px}
+
+  /* top bar */
+  .topbar{display:flex; align-items:center; gap:12px; margin-bottom:14px}
+  .home-btn{
+    appearance:none; border:3px solid var(--line); background:#fff; color:#0f172a;
+    border-radius:999px; padding:10px 14px; font-weight:800; text-decoration:none;
+    box-shadow:var(--shadow-1); display:inline-flex; align-items:center; gap:8px;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .home-btn:hover{transform:translateY(-1px); box-shadow:var(--shadow-2)}
+  .home-btn:active{transform:translateY(0)}
+  .tag{font-weight:800; color:#4b5d7f}
+
+  /* card */
+  .card{
+    background:var(--panel); border:3px solid var(--line); border-radius:var(--r-lg); padding:18px;
+    box-shadow:var(--shadow-1);
+  }
+
+  /* header block */
+  .head{
+    display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px
+  }
+  .title{
+    font:800 28px/1.15 "Plus Jakarta Sans",Inter,sans-serif; margin:0;
+    display:flex; align-items:center; gap:10px;
+  }
+  .badge{
+    display:inline-flex; gap:8px; align-items:center; padding:8px 12px;
+    border:2px solid var(--line); background:#fff7ed; border-radius:999px; font-weight:800; color:#9a3412;
+  }
+
+  /* stats */
+  .stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px
+  }
+  @media (max-width:680px){ .stats{grid-template-columns:repeat(2,1fr)} }
+  .stat{
+    background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px 12px; text-align:center; font-weight:800
+  }
+  .stat small{display:block; color:var(--sub); font-weight:700}
+
+  /* progress bar */
+  .bar{background:#f2f6ff; border:2px solid var(--line); border-radius:12px; height:22px; overflow:hidden; margin-bottom:14px}
+  .fill{
+    height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--topic));
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:12px;
+    transition:width .35s ease;
+  }
+
+  /* helper chips (compact PEMDAS reminder) */
+  .helper{
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+    background:linear-gradient(180deg,#fffaf3,#ffffff);
+    border:2px solid var(--line); border-radius:12px; padding:10px; margin:10px 0 14px;
+  }
+  .chip{
+    background:#fff; border:2px solid var(--line); border-radius:10px; padding:8px 10px; font-weight:800; color:#7a2e0e
+  }
+
+  /* question area */
+  .qbox{
+    background:linear-gradient(180deg,#fff6ed,#ffffff);
+    border:3px solid var(--line); border-radius:var(--r-md); padding:18px; text-align:center;
+  }
+  .q-text{font-weight:800; color:#1d3350; margin-bottom:10px}
+  .expr{
+    font:800 34px/1.2 "Plus Jakarta Sans",Inter; color:var(--topic);
+    background:#fff; border:3px solid #ffd8b1; border-radius:14px; padding:14px 16px; display:inline-block; margin:10px 0 12px
+  }
+
+  .answer{
+    font:600 18px/1.2 Inter; padding:12px 14px; border:3px solid var(--line); border-radius:12px;
+    width:220px; max-width:100%; text-align:center; margin:6px; background:#fff
+  }
+  .actions{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:6px}
+  .btn{
+    appearance:none; border:0; border-radius:12px; padding:12px 18px; font-weight:800; cursor:pointer;
+    color:#fff; background:var(--topic); box-shadow:0 6px 0 #fdbb74; transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 10px 0 #fdbb74}
+  .btn:active{transform:translateY(0); box-shadow:0 4px 0 #fdbb74}
+  .btn-ghost{
+    background:#fff; color:#0f172a; border:3px solid var(--line); box-shadow:var(--shadow-1)
+  }
+
+  .feedback{min-height:56px; margin-top:10px; font-weight:800}
+  .ok{color:var(--good)} .no{color:var(--bad)}
+  .exp{
+    margin:10px auto 0; padding:12px; max-width:680px; text-align:left;
+    background:#fff; border:2px solid #ffe29c; border-radius:12px; color:#1f2937; font-weight:700
+  }
+
+  /* report modal */
+  .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(9,15,30,.65); z-index:1000}
+  .modal.show{display:grid}
+  .sheet{
+    background:linear-gradient(180deg,#fff6ed,#ffffff);
+    width:min(92vw,560px); border:4px solid var(--line); border-radius:22px; padding:22px;
+    box-shadow:0 30px 80px rgba(9,20,50,.35);
+    text-align:center;
+  }
+  .sheet h2{font:800 26px/1.2 "Plus Jakarta Sans"; margin:0 0 10px; color:#7c2d12}
+  .stats-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0 6px}
+  .pill{background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px; font-weight:800}
+  .note{color:#5f6c86; font-weight:700; margin-top:8px}
+  .modal-actions{display:flex; gap:10px; justify-content:center; margin-top:12px}
+
+  /* mobile tweaks */
+  @media (max-width:600px){
+    .title{ font-size: clamp(1.4rem, 4vw, 2rem); }
+    .expr{ font-size: clamp(1.4rem, 6vw, 2rem); }
+    .answer{ width:100%; }
+    .stats{ grid-template-columns:1fr 1fr; }
+    .actions{ gap:8px; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .fill{transition:none}
+    .btn,.home-btn{transition:none}
+  }
+</style>
+</head>
+<body>
+  <div class="studs" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <a class="home-btn" href="index.html">🏠 Home</a>
+      <span class="tag">BOMDAS • Order of Operations</span>
+    </div>
+
+    <section class="card">
+      <div class="head">
+        <h1 class="title">BOMDAS Arena</h1>
+        <span class="badge">Easy → Medium → Hard • 50 Questions</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat">Score <small id="score">0</small></div>
+        <div class="stat">Question <small><span id="qNum">1</span>/50</small></div>
+        <div class="stat">Streak <small id="streak">0</small></div>
+        <div class="stat">Stage <small id="stage">🌱 Training</small></div>
+      </div>
+
+      <!-- Progress -->
+      <div class="bar"><div id="barFill" class="fill">0%</div></div>
+
+      <!-- Compact BOMDAS reminder (shown for easy/medium) -->
+      <div id="helper" class="helper"></div>
+
+      <!-- Question -->
+      <div class="qbox">
+        <div class="q-text">Solve using the order of operations:</div>
+        <div id="expr" class="expr">2 + 3 × 4</div>
+
+        <div>
+          <input id="answer" class="answer" type="number" placeholder="Answer" inputmode="numeric" />
+        </div>
+        <div class="actions">
+          <button id="submit" class="btn">Battle ⚔️</button>
+          <button id="end" class="btn btn-ghost">End Practice ❌</button>
+        </div>
+
+        <div id="fb" class="feedback"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Report Modal -->
+  <div id="reportModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+    <div class="sheet">
+      <h2 id="reportTitle">Battle Report</h2>
+      <div id="reportNote" class="note"></div>
+      <div class="stats-grid">
+        <div class="pill">Final Score<br><span id="rScore">0</span></div>
+        <div class="pill">Correct<br><span id="rCorrect">0</span>/50</div>
+        <div class="pill">Accuracy<br><span id="rAcc">0%</span></div>
+        <div class="pill">Stage Reached<br><span id="rStage">Training</span></div>
+      </div>
+      <div id="tip" class="note"></div>
+      <div class="modal-actions">
+        <a href="index.html" class="home-btn">🏠 Return Home</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   STATE & SETTINGS
+==========================*/
+const MAX_Q = 50;
+
+const levels = {
+  easy:   { name:'🌱 Training', showHelper:true,  ops:['+','-','×'],           paren:false, exp:false, max:10 },
+  medium: { name:'⭐ Warrior',   showHelper:true,  ops:['+','-','×','÷'],       paren:true,  exp:false, max:20 },
+  hard:   { name:'👑 Champion',  showHelper:false, ops:['+','-','×','÷'],      paren:true,  exp:true,  max:15 }
+};
+
+const ui = {
+  score:   document.getElementById('score'),
+  qNum:    document.getElementById('qNum'),
+  streak:  document.getElementById('streak'),
+  stage:   document.getElementById('stage'),
+  barFill: document.getElementById('barFill'),
+  helper:  document.getElementById('helper'),
+  expr:    document.getElementById('expr'),
+  ans:     document.getElementById('answer'),
+  fb:      document.getElementById('fb'),
+  modal:   document.getElementById('reportModal'),
+  rScore:  document.getElementById('rScore'),
+  rCorrect:document.getElementById('rCorrect'),
+  rAcc:    document.getElementById('rAcc'),
+  rStage:  document.getElementById('rStage'),
+  note:    document.getElementById('reportNote'),
+  tip:     document.getElementById('tip'),
+};
+
+let game = {
+  q:1, score:0, streak:0, correct:0, answered:0,
+  stage:'easy',
+  expression:'', answer:0, steps:[]
+};
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+function updateStage(){
+  if (game.q <= 15) game.stage = 'easy';
+  else if (game.q <= 35) game.stage = 'medium';
+  else game.stage = 'hard';
+  ui.stage.textContent = levels[game.stage].name;
+
+  // helper chips for easy/medium
+  if (levels[game.stage].showHelper){
+    ui.helper.innerHTML = ['( )','^','× ÷','+ −'].map(t=>`<span class="chip">${t}</span>`).join('');
+    ui.helper.style.display = '';
+  } else {
+    ui.helper.style.display = 'none';
+  }
+}
+
+function getNum(max){ return rand(1, max); }
+
+function genExpression(){
+  const L = levels[game.stage];
+  let expr = '', steps = [];
+
+  if (game.stage === 'easy'){
+    const a=getNum(L.max), b=getNum(L.max), c=getNum(L.max);
+    if (Math.random() > 0.5){
+      expr = `${a} + ${b} × ${c}`;
+      steps = [
+        `${a} + ${b} × ${c}`,
+        `${a} + ${b*c} (multiply first)`,
+        `${a + b*c} (then add)`
+      ];
+    } else {
+      expr = `${a} × ${b} - ${c}`;
+      steps = [
+        `${a} × ${b} - ${c}`,
+        `${a*b} - ${c} (multiply first)`,
+        `${a*b - c} (then subtract)`
+      ];
+    }
+  } else if (game.stage === 'medium'){
+    const a=getNum(L.max), b=getNum(L.max), c=getNum(L.max);
+    const op1 = pick(['+','-']);
+    const op2 = pick(['×','÷']);
+    if (Math.random() > 0.5){
+      expr = `(${a} ${op1} ${b}) ${op2} ${c}`;
+      const par = op1==='+'? a+b : a-b;
+      const fin = op2==='×'? par*c : Math.trunc(par/c);
+      steps = [
+        `(${a} ${op1} ${b}) ${op2} ${c}`,
+        `${par} ${op2} ${c} (parentheses first)`,
+        `${fin} (${op2==='×'?'multiply':'divide'})`
+      ];
+    } else {
+      expr = `${a} ${op2} ${b} ${op1} ${c}`;
+      const mul = op2==='×'? a*b : Math.trunc(a/b);
+      const fin = op1==='+'? mul+c : mul-c;
+      steps = [
+        `${a} ${op2} ${b} ${op1} ${c}`,
+        `${mul} ${op1} ${c} (${op2==='×'?'multiply':'divide'} first)`,
+        `${fin} (then ${op1==='+'?'add':'subtract'})`
+      ];
+    }
+  } else {
+    // hard: exponent + mult + add/sub
+    const base = rand(2,5), exp = Math.random()>0.5?2:3;
+    const b=getNum(L.max), c=getNum(L.max);
+    const op1 = pick(['+','-']);
+    expr = `${base}^${exp} ${op1} ${b} × ${c}`;
+    const pow = base ** exp;
+    const mul = b * c;
+    const fin = op1==='+' ? pow + mul : pow - mul;
+    steps = [
+      `${base}^${exp} ${op1} ${b} × ${c}`,
+      `${pow} ${op1} ${b} × ${c} (exponent first)`,
+      `${pow} ${op1} ${mul} (then multiply)`,
+      `${fin} (finally ${op1==='+'?'add':'subtract'})`
+    ];
+  }
+
+  return { expr, steps };
+}
+
+function evalExpr(str){
+  // safe symbol replace; numbers/operators are generated by us
+  const e = str.replace(/×/g,'*').replace(/÷/g,'/').replace(/\^/g,'**');
+  try{
+    // integer-ish eval; use Math.trunc to match the steps above
+    const val = Function(`"use strict";return (${e});`)();
+    return Math.trunc(val);
+  }catch(_){ return 0; }
+}
+
+function setQuestion(){
+  updateStage();
+  const g = genExpression();
+  game.expression = g.expr;
+  game.steps = g.steps;
+  game.answer = evalExpr(game.expression);
+
+  ui.expr.textContent = game.expression;
+  ui.ans.value = '';
+  ui.fb.innerHTML = '';
+  updateHud();
+}
+
+function updateHud(){
+  ui.score.textContent = game.score;
+  ui.qNum.textContent = game.q;
+  ui.streak.textContent = game.streak;
+
+  const pct = Math.round(((game.q - 1) / MAX_Q) * 100);
+  ui.barFill.style.width = pct + '%';
+  ui.barFill.textContent = pct + '%';
+}
+
+function checkAnswer(){
+  const raw = ui.ans.value.trim();
+  if (!raw) return;
+  const val = Number(raw);
+
+  if (Number.isFinite(val) && val === game.answer){
+    game.score += 15;
+    game.streak++;
+    game.correct++;
+    if (game.streak >= 5) game.score += 10;
+    ui.fb.innerHTML = `<div class="ok">Victory! +15 ${game.streak>=5?'+10 streak bonus':''}</div>`;
+  } else {
+    game.streak = 0;
+    const stepsHtml = game.steps.map(s=>`<div>• ${s}</div>`).join('');
+    ui.fb.innerHTML = `<div class="no">Not quite. The answer was ${game.answer}.</div><div class="exp"><strong>Steps:</strong><br>${stepsHtml}</div>`;
+  }
+
+  game.answered++;
+  updateHud();
+
+  setTimeout(()=>{
+    game.q++;
+    if (game.q > MAX_Q){
+      showReport(false);
+      resetGame();
+    } else {
+      setQuestion();
+    }
+  }, 1800);
+}
+
+/* ============== REPORT & SAVE ============== */
+function showReport(endedEarly){
+  const accuracy = game.answered > 0 ? Math.round((game.correct / game.answered) * 100) : 0;
+  ui.rScore.textContent = game.score;
+  ui.rCorrect.textContent = `${game.correct}`;
+  ui.rAcc.textContent = `${accuracy}%`;
+  ui.rStage.textContent = levels[game.stage].name.replace(/^[^A-Za-z0-9]+/,'');
+  ui.note.textContent = endedEarly
+    ? `Practice ended early after ${game.answered} of ${MAX_Q} questions.`
+    : `Great work completing all ${MAX_Q} questions!`;
+
+  let tip = '';
+  if (accuracy >= 90) tip = 'Speed tip: evaluate powers, then ×/÷ left-to-right, then +/−.';
+  else if (accuracy >= 75) tip = 'Bracket tricky parts to control the order and avoid mistakes.';
+  else tip = 'Remember: ( ) → exponents → ×/÷ → +/− (left to right).';
+  ui.tip.textContent = tip;
+
+  ui.modal.classList.add('show');
+
+  // Save attempt for home page history
+  const payload = { topic:'BOMDAS', score:game.score, accuracy, total:MAX_Q };
+  try{
+    const KEY='rexmath_attempts';
+    const list = JSON.parse(localStorage.getItem(KEY)) || [];
+    list.unshift({ ...payload, when:new Date().toISOString() });
+    localStorage.setItem(KEY, JSON.stringify(list.slice(0,50)));
+  }catch(e){}
+  if (window.opener && typeof window.opener.saveRexAttempt === 'function'){
+    window.opener.saveRexAttempt(payload);
+  }
+}
+
+function resetGame(){
+  game = { q:1, score:0, streak:0, correct:0, answered:0, stage:'easy', expression:'', answer:0, steps:[] };
+}
+
+/* ============== EVENTS ============== */
+document.getElementById('submit').addEventListener('click', checkAnswer);
+ui.ans.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') checkAnswer(); });
+
+// End Practice flow
+document.getElementById('end').addEventListener('click', ()=>{
+  if (confirm('Are you sure you want to end practice early?')){
+    showReport(true);
+    resetGame();
+  }
+});
+
+// Init
+updateHud();
+setQuestion();
+</script>
+</body>
+</html>

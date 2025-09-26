@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Place Value Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Match the hub palette */
+    --bg-top:#eaf4ff; --bg-bottom:#f7fbff;
+    --panel:#ffffff; --ink:#0f172a; --sub:#5f6c86;
+    --line:#dbe6fb; --stud:#cfe0ff;
+    --accent:#2563eb;           /* brand blue */
+    --topic:#3b82f6;            /* page accent (Place Value) */
+    --good:#10b981; --bad:#ef4444; --gold:#f59e0b;
+
+    --r-lg:22px; --r-md:16px;
+    --shadow-1:0 10px 0 #cfdaf5, 0 10px 26px rgba(20,32,70,.08);
+    --shadow-2:0 14px 0 #cfdaf5, 0 16px 36px rgba(20,32,70,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1000px 560px at 75% -10%, #ffffffaa 0%, #ffffff00 60%),
+      linear-gradient(180deg,var(--bg-top),var(--bg-bottom));
+  }
+
+  /* studs background */
+  .studs{position:fixed; inset:0; pointer-events:none; z-index:-1; opacity:.35;
+    background:
+      radial-gradient(circle 3px at 10px 10px, var(--stud) 42%, #0000 43%) 0 0/26px 26px,
+      radial-gradient(circle 3px at 23px 23px, var(--stud) 42%, #0000 43%) 0 0/26px 26px;
+  }
+
+  .wrap{max-width:1100px; margin:54px auto; padding:0 18px}
+
+  /* top bar */
+  .topbar{display:flex; align-items:center; gap:12px; margin-bottom:14px}
+  .home-btn{
+    appearance:none; border:3px solid var(--line); background:#fff; color:#0f172a;
+    border-radius:999px; padding:10px 14px; font-weight:800; text-decoration:none;
+    box-shadow:var(--shadow-1); display:inline-flex; align-items:center; gap:8px;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .home-btn:hover{transform:translateY(-1px); box-shadow:var(--shadow-2)}
+  .home-btn:active{transform:translateY(0)}
+  .tag{font-weight:800; color:#4b5d7f}
+
+  /* card */
+  .card{
+    background:var(--panel); border:3px solid var(--line); border-radius:var(--r-lg); padding:18px;
+    box-shadow:var(--shadow-1);
+  }
+
+  /* header block */
+  .head{
+    display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px
+  }
+  .title{
+    font:800 28px/1.15 "Plus Jakarta Sans",Inter,sans-serif; margin:0;
+    display:flex; align-items:center; gap:10px;
+  }
+  .badge{
+    display:inline-flex; gap:8px; align-items:center; padding:8px 12px;
+    border:2px solid var(--line); background:#f6faff; border-radius:999px; font-weight:800; color:#1d4ed8;
+  }
+
+  /* stats */
+  .stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px
+  }
+  @media (max-width:680px){ .stats{grid-template-columns:repeat(2,1fr)} }
+  .stat{
+    background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px 12px; text-align:center; font-weight:800
+  }
+  .stat small{display:block; color:var(--sub); font-weight:700}
+
+  /* progress bar */
+  .bar{background:#f2f6ff; border:2px solid var(--line); border-radius:12px; height:22px; overflow:hidden; margin-bottom:14px}
+  .fill{
+    height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--topic));
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:12px;
+    transition:width .35s ease;
+  }
+
+  /* helper places */
+  .helper{
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+    background:linear-gradient(90deg,#eef4ff,#ffffff);
+    border:2px solid var(--line); border-radius:12px; padding:10px; margin:10px 0 14px;
+  }
+  .place-chip{
+    background:#fff; border:2px solid var(--line); border-radius:10px; padding:8px 10px; font-weight:800; color:#1d3350
+  }
+
+  /* question area */
+  .qbox{
+    background:linear-gradient(180deg,#eff7ff,#ffffff);
+    border:3px solid var(--line); border-radius:var(--r-md); padding:18px; text-align:center;
+  }
+  .q-text{font-weight:800; color:#1d3350; margin-bottom:10px}
+  .number{
+    font:800 34px/1.2 "Plus Jakarta Sans",Inter; color:var(--topic);
+    background:#fff; border:3px solid #cfe0ff; border-radius:14px; padding:14px 16px; display:inline-block; margin:10px 0 12px
+  }
+  .highlight{background:linear-gradient(180deg,#ffedba,#ffd27a); color:#1f2937; padding:2px 8px; border-radius:8px; border:2px solid #fbbf24}
+
+  .answer{
+    font:600 18px/1.2 Inter; padding:12px 14px; border:3px solid var(--line); border-radius:12px;
+    width:260px; max-width:100%; text-align:center; margin:6px; background:#fff
+  }
+  .btn{
+    appearance:none; border:0; border-radius:12px; padding:12px 18px; font-weight:800; cursor:pointer;
+    color:#fff; background:var(--topic); box-shadow:0 6px 0 #9dbcf6; transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 10px 0 #9dbcf6}
+  .btn:active{transform:translateY(0); box-shadow:0 4px 0 #9dbcf6}
+
+  .btn-ghost{
+    background:#fff; color:#0f172a; border:3px solid var(--line); box-shadow:var(--shadow-1)
+  }
+
+  .actions{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:6px}
+
+  .feedback{min-height:56px; margin-top:10px; font-weight:800}
+  .ok{color:var(--good)} .no{color:var(--bad)}
+  .exp{
+    margin:10px auto 0; padding:12px; max-width:680px; text-align:left;
+    background:#fff; border:2px solid #ffe29c; border-radius:12px; color:#1f2937; font-weight:700
+  }
+
+  /* report modal */
+  .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(9,15,30,.65); z-index:1000}
+  .modal.show{display:grid}
+  .sheet{
+    background:linear-gradient(180deg,#f1f8ff,#ffffff);
+    width:min(92vw,560px); border:4px solid var(--line); border-radius:22px; padding:22px;
+    box-shadow:0 30px 80px rgba(9,20,50,.35);
+    text-align:center;
+  }
+  .sheet h2{font:800 26px/1.2 "Plus Jakarta Sans"; margin:0 0 10px; color:#0b2659}
+  .stats-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0 6px}
+  .pill{background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px; font-weight:800}
+  .note{color:#5f6c86; font-weight:700; margin-top:8px}
+  .modal-actions{display:flex; gap:10px; justify-content:center; margin-top:12px}
+
+  /* mobile tweaks */
+  @media (max-width:480px){
+    .number{font-size:28px}
+    .answer{width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .fill{transition:none}
+    .btn,.home-btn{transition:none}
+  }
+</style>
+</head>
+<body>
+  <div class="studs" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <a class="home-btn" href="index.html">🏠 Home</a>
+      <span class="tag">Place Value • Whole & Decimals</span>
+    </div>
+
+    <section class="card">
+      <div class="head">
+        <h1 class="title">Place Value Explorer</h1>
+        <span class="badge">Level adapts from Easy → Medium → Hard</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat">Score <small id="score">0</small></div>
+        <div class="stat">Question <small><span id="qNum">1</span>/50</small></div>
+        <div class="stat">Streak <small id="streak">0</small></div>
+        <div class="stat">Stage <small id="stage">🌟 Number Scout</small></div>
+      </div>
+
+      <!-- Progress -->
+      <div class="bar"><div id="barFill" class="fill">0%</div></div>
+
+      <!-- Helper chips -->
+      <div id="helper" class="helper"></div>
+
+      <!-- Question -->
+      <div class="qbox">
+        <div id="qText" class="q-text">What is the VALUE of the highlighted digit?</div>
+        <div id="num" class="number">1<span class="highlight">2</span>3</div>
+
+        <div>
+          <input id="answer" class="answer" placeholder="Your answer" autocomplete="off" />
+        </div>
+        <div class="actions">
+          <button id="submit" class="btn">Submit ✅</button>
+          <button id="end" class="btn btn-ghost">End Practice ❌</button>
+        </div>
+
+        <div id="fb" class="feedback"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Report Modal -->
+<!-- Report Modal -->
+<div id="reportModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+  <div class="sheet">
+    <h2 id="reportTitle">Explorer Report</h2>
+    <div id="reportNote" class="note"></div>
+    <div class="stats-grid">
+      <div class="pill">Final Score<br><span id="rScore">0</span></div>
+      <div class="pill">Correct<br><span id="rCorrect">0</span>/50</div>
+      <div class="pill">Accuracy<br><span id="rAcc">0%</span></div>
+      <div class="pill">Stage Reached<br><span id="rStage">Scout</span></div>
+    </div>
+    <div id="tip" class="note"></div>
+    <div class="modal-actions">
+      <!-- Instead of closing modal, send back home -->
+      <a href="index.html" class="home-btn">🏠 Return Home</a>
+    </div>
+  </div>
+</div>
+
+
+  <script>
+    /* =========================
+       GAME STATE & SETTINGS
+    ==========================*/
+    const MAX_Q = 50;
+
+    const difficulty = {
+      easy:   { name:'🌟 Number Scout',   maxDigits:3, useDecimals:false, maxDp:0,  places:['Hundreds','Tens','Ones'], types:['value','place'] },
+      medium: { name:'⭐ Digit Detective', maxDigits:4, useDecimals:true,  maxDp:1,  places:['Thousands','Hundreds','Tens','Ones','Tenths'], types:['value','place','digit'] },
+      hard:   { name:'👑 Place Value Master', maxDigits:5, useDecimals:true, maxDp:2, places:['Ten-Thousands','Thousands','Hundreds','Tens','Ones','Tenths','Hundredths'], types:['value','place','digit','expand'] }
+    };
+
+    const ui = {
+      score:   document.getElementById('score'),
+      qNum:    document.getElementById('qNum'),
+      streak:  document.getElementById('streak'),
+      stage:   document.getElementById('stage'),
+      barFill: document.getElementById('barFill'),
+      helper:  document.getElementById('helper'),
+      qText:   document.getElementById('qText'),
+      num:     document.getElementById('num'),
+      ans:     document.getElementById('answer'),
+      fb:      document.getElementById('fb'),
+      modal:   document.getElementById('reportModal'),
+      rScore:  document.getElementById('rScore'),
+      rCorrect:document.getElementById('rCorrect'),
+      rAcc:    document.getElementById('rAcc'),
+      rStage:  document.getElementById('rStage'),
+      tip:     document.getElementById('tip'),
+      note:    document.getElementById('reportNote'),
+    };
+
+    let game = {
+      q: 1,
+      score: 0,
+      streak: 0,
+      correct: 0,
+      questionsAnswered: 0,
+      stage: 'easy',         // 'easy' | 'medium' | 'hard'
+      number: '',
+      pos: -1,
+      type: 'value',
+      answer: null
+    };
+
+    function updateStage(){
+      if (game.q <= 15) game.stage = 'easy';
+      else if (game.q <= 35) game.stage = 'medium';
+      else game.stage = 'hard';
+
+      const s = difficulty[game.stage];
+      ui.stage.textContent = s.name;
+
+      // helper chips
+      ui.helper.innerHTML = s.places.map(p => `<span class="place-chip">${p}</span>`).join('');
+    }
+
+    function randInt(n){ return Math.floor(Math.random()*n); }
+
+    function genNumber(){
+      const s = difficulty[game.stage];
+      const digits = randInt(s.maxDigits) + 1;
+      let n = '';
+      for(let i=0;i<digits;i++){
+        n += (i===0? (randInt(9)+1) : randInt(10));
+      }
+      if (s.useDecimals && Math.random() > 0.3){
+        n += '.';
+        const dp = randInt(s.maxDp)+1;
+        for(let i=0;i<dp;i++) n += randInt(10);
+      }
+      return n;
+    }
+
+    function placeName(position, str){
+      const di = str.indexOf('.'); const isDec = di !== -1;
+      if (!isDec || position < di){
+        const L = isDec ? di : str.length;
+        const fromRight = L - position - 1;
+        const names = ['Ones','Tens','Hundreds','Thousands','Ten-Thousands','Hundred-Thousands'];
+        return names[fromRight] || 'Unknown';
+      } else {
+        const dp = position - di - 1;
+        const names = ['Tenths','Hundredths','Thousandths'];
+        return names[dp] || 'Unknown';
+      }
+    }
+
+    function placeValue(digit, position, str){
+      const di = str.indexOf('.'); const isDec = di !== -1;
+      if (!isDec || position < di){
+        const L = isDec ? di : str.length;
+        const p = L - position - 1;
+        return parseInt(digit) * Math.pow(10, p);
+      } else {
+        const dp = position - di - 1;
+        return parseInt(digit) * Math.pow(10, -(dp + 1));
+      }
+    }
+
+    function expandForm(str){
+      const parts = [];
+      for(let i=0;i<str.length;i++){
+        if (str[i] === '.') continue;
+        const d = parseInt(str[i]); if (!d) continue;
+        const v = placeValue(d, i, str);
+        parts.push(v >= 1 ? String(v) : v.toFixed(getDp(v)));
+      }
+      return parts.join(' + ');
+    }
+    function getDp(num){
+      const s = String(num);
+      if (s.includes('e-')) return parseInt(s.split('e-')[1]);
+      if (s.includes('.')) return s.split('.')[1].length;
+      return 0;
+    }
+
+    function setQuestion(){
+      updateStage();
+      const s = difficulty[game.stage];
+
+      game.number = genNumber();
+      game.type = s.types[randInt(s.types.length)];
+
+      // choose highlight pos (skip dot)
+      const pos = [];
+      for(let i=0;i<game.number.length;i++) if (game.number[i] !== '.') pos.push(i);
+      game.pos = pos[randInt(pos.length)];
+
+      const d = game.number[game.pos];
+      const pname = placeName(game.pos, game.number);
+
+      let qtext = '', correct = '';
+      switch(game.type){
+        case 'value':
+          qtext = 'What is the VALUE of the highlighted digit?';
+          correct = placeValue(d, game.pos, game.number);
+          break;
+        case 'place':
+          qtext = 'What PLACE is the highlighted digit in?';
+          correct = pname.toLowerCase();
+          break;
+        case 'digit':
+          qtext = `What digit is in the ${pname.toLowerCase()} place?`;
+          correct = d;
+          game.pos = -1; // no highlight for this type
+          break;
+        case 'expand':
+          qtext = `Write ${game.number} in expanded form (e.g., 100 + 20 + 3)`;
+          correct = expandForm(game.number);
+          game.pos = -1;
+          break;
+      }
+      game.answer = correct;
+
+      ui.qText.textContent = qtext;
+      ui.ans.value = '';
+      ui.fb.innerHTML = '';
+
+      // render number with (optional) highlight
+      if (game.pos >= 0){
+        let html = '';
+        for(let i=0;i<game.number.length;i++){
+          html += i === game.pos ? `<span class="highlight">${game.number[i]}</span>` : game.number[i];
+        }
+        ui.num.innerHTML = html;
+      } else {
+        ui.num.textContent = game.number;
+      }
+      updateHud();
+    }
+
+    function updateHud(){
+      ui.score.textContent = game.score;
+      ui.qNum.textContent = game.q;
+      ui.streak.textContent = game.streak;
+
+      const pct = Math.round(((game.q - 1) / MAX_Q) * 100);
+      ui.barFill.style.width = pct + '%';
+      ui.barFill.textContent = pct + '%';
+    }
+
+    function checkAnswer(){
+      const input = ui.ans.value.trim();
+      if (!input) return;
+
+      let ok = false;
+      if (game.type === 'place'){
+        ok = input.toLowerCase() === String(game.answer).toLowerCase();
+      } else if (game.type === 'expand'){
+        ok = input.replace(/\s/g,'') === String(game.answer).replace(/\s/g,'');
+      } else {
+        ok = (parseFloat(input) === parseFloat(game.answer));
+      }
+
+      if (ok){
+        game.score += 12;
+        game.streak++;
+        game.correct++;
+        if (game.streak >= 5) game.score += 8; // streak bonus
+        ui.fb.innerHTML = `<div class="ok">Great! +12 ${game.streak>=5?'+8 streak bonus':''}</div>`;
+      } else {
+        const digit = game.pos >= 0 ? game.number[game.pos] : '';
+        let exp = '';
+        if (game.type === 'value'){
+          const pname = placeName(game.pos, game.number);
+          exp = `The digit ${digit} is in the ${pname} place, so its value is ${game.answer}.`;
+        } else if (game.type === 'place'){
+          exp = `The digit ${digit} is in the ${game.answer} place.`;
+        } else if (game.type === 'digit'){
+          exp = `The answer is ${game.answer}.`;
+        } else {
+          exp = `${game.number} = ${game.answer}.`;
+        }
+        game.streak = 0;
+        ui.fb.innerHTML = `<div class="no">Not quite.</div><div class="exp">${exp}</div>`;
+      }
+
+      game.questionsAnswered++;
+      updateHud();
+
+      setTimeout(() => {
+        game.q++;
+        if (game.q > MAX_Q){
+          showReport(false); // finished normally
+          resetGame();
+        } else {
+          setQuestion();
+        }
+      }, 1500);
+    }
+
+    /* ============== REPORT & SAVE ============== */
+    function showReport(endedEarly){
+      const accuracy = game.questionsAnswered > 0 ? Math.round((game.correct / game.questionsAnswered) * 100) : 0;
+      ui.rScore.textContent = game.score;
+      ui.rCorrect.textContent = `${game.correct}`;
+      ui.rAcc.textContent = `${accuracy}%`;
+      ui.rStage.textContent = difficulty[game.stage].name.replace(/^[^A-Za-z0-9]+/,'');
+      ui.note.textContent = endedEarly
+        ? `Practice ended early after ${game.questionsAnswered} of ${MAX_Q} questions.`
+        : `Great work completing all ${MAX_Q} questions!`;
+
+      // extra tip based on performance
+      let tip = '';
+      if (accuracy >= 90) tip = 'Masterful! Try explaining a problem to someone else to lock it in.';
+      else if (accuracy >= 75) tip = 'Strong work! Review any places you missed twice.';
+      else tip = 'Focus tip: match the highlighted place name to its value (e.g., Tens → ×10).';
+      ui.tip.textContent = tip;
+
+      ui.modal.classList.add('show');
+
+      // Save attempt (simple localStorage) + notify hub if open
+      const payload = { topic:'Place Value', score:game.score, accuracy, total:MAX_Q };
+      try{
+        const KEY='rexmath_attempts';
+        const list = JSON.parse(localStorage.getItem(KEY)) || [];
+        list.unshift({ ...payload, when:new Date().toISOString() });
+        localStorage.setItem(KEY, JSON.stringify(list.slice(0,50)));
+      }catch(e){}
+      if (window.opener && typeof window.opener.saveRexAttempt === 'function'){
+        window.opener.saveRexAttempt(payload);
+      }
+    }
+
+    function resetGame(){
+      game = {
+        q: 1, score: 0, streak: 0, correct: 0, questionsAnswered: 0,
+        stage: 'easy', number: '', pos: -1, type: 'value', answer: null
+      };
+    }
+
+    /* ============== EVENTS ============== */
+    document.getElementById('submit').addEventListener('click', checkAnswer);
+    ui.ans.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') checkAnswer(); });
+
+    // End Practice flow
+    document.getElementById('end').addEventListener('click', ()=>{
+      if (confirm('Are you sure you want to end practice early?')){
+        showReport(true);
+        resetGame();
+      }
+    });
+
+    document.getElementById('closeReport').addEventListener('click', ()=>{
+      ui.modal.classList.remove('show');
+      // Start a new session immediately
+      updateHud(); setQuestion();
+      // Scroll to top for mobile comfort
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Init
+    updateStage();
+    updateHud();
+    setQuestion();
+  </script>
+</body>
+</html>

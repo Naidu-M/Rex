@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Factors & Multiples Adventure</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-top:#eaf4ff; --bg-bottom:#f7fbff;
+    --panel:#ffffff; --ink:#0f172a; --sub:#5f6c86;
+    --line:#dbe6fb; --stud:#cfe0ff;
+    --accent:#16a34a;          /* green for Factors/Multiples */
+    --topic:#22c55e;           /* brighter accent */
+    --good:#10b981; --bad:#ef4444; --gold:#f59e0b;
+
+    --r-lg:22px; --r-md:16px;
+    --shadow-1:0 10px 0 #cfdaf5, 0 10px 26px rgba(20,32,70,.08);
+    --shadow-2:0 14px 0 #cfdaf5, 0 16px 36px rgba(20,32,70,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1000px 560px at 75% -10%, #ffffffaa 0%, #ffffff00 60%),
+      linear-gradient(180deg,var(--bg-top),var(--bg-bottom));
+  }
+
+  .studs{position:fixed; inset:0; pointer-events:none; z-index:-1; opacity:.35;
+    background:
+      radial-gradient(circle 3px at 10px 10px, var(--stud) 42%, #0000 43%) 0 0/26px 26px,
+      radial-gradient(circle 3px at 23px 23px, var(--stud) 42%, #0000 43%) 0 0/26px 26px;
+  }
+
+  .wrap{max-width:1100px; margin:54px auto; padding:0 18px}
+
+  .topbar{display:flex; align-items:center; gap:12px; margin-bottom:14px}
+  .home-btn{
+    appearance:none; border:3px solid var(--line); background:#fff; color:#0f172a;
+    border-radius:999px; padding:10px 14px; font-weight:800; text-decoration:none;
+    box-shadow:var(--shadow-1); display:inline-flex; align-items:center; gap:8px;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .home-btn:hover{transform:translateY(-1px); box-shadow:var(--shadow-2)}
+  .tag{font-weight:800; color:#4b5d7f}
+
+  .card{
+    background:var(--panel); border:3px solid var(--line); border-radius:var(--r-lg); padding:18px;
+    box-shadow:var(--shadow-1);
+  }
+
+  .head{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:14px}
+  .title{font:800 28px/1.15 "Plus Jakarta Sans",Inter,sans-serif; margin:0}
+  .badge{padding:8px 12px; border:2px solid var(--line); background:#f6faff; border-radius:999px; font-weight:800; color:var(--accent)}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:12px}
+  @media (max-width:680px){ .stats{grid-template-columns:repeat(2,1fr)} }
+  .stat{background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px 12px; text-align:center; font-weight:800}
+  .stat small{display:block; color:var(--sub); font-weight:700}
+
+  .bar{background:#f2f6ff; border:2px solid var(--line); border-radius:12px; height:22px; overflow:hidden; margin-bottom:14px}
+  .fill{height:100%; width:0%; background:linear-gradient(90deg, var(--gold), var(--topic));
+    display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:12px; transition:width .35s ease}
+
+  .qbox{background:linear-gradient(180deg,#eff7ff,#ffffff); border:3px solid var(--line); border-radius:var(--r-md); padding:18px; text-align:center}
+  .q-text{font-weight:800; margin-bottom:10px}
+  .answer{font:600 18px/1.2 Inter; padding:12px 14px; border:3px solid var(--line); border-radius:12px; width:260px; max-width:100%; text-align:center; margin:6px; background:#fff}
+  .btn{appearance:none; border:0; border-radius:12px; padding:12px 18px; font-weight:800; cursor:pointer; color:#fff; background:var(--topic); box-shadow:0 6px 0 #93e7b0; transition:.08s}
+  .btn:hover{transform:translateY(-1px); box-shadow:0 10px 0 #93e7b0}
+  .btn:active{transform:translateY(0); box-shadow:0 4px 0 #93e7b0}
+  .btn-ghost{background:#fff; color:#0f172a; border:3px solid var(--line); box-shadow:var(--shadow-1)}
+
+  .actions{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:6px}
+  .feedback{min-height:56px; margin-top:10px; font-weight:800}
+  .ok{color:var(--good)} .no{color:var(--bad)}
+
+  .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(9,15,30,.65); z-index:1000}
+  .modal.show{display:grid}
+  .sheet{background:linear-gradient(180deg,#f1f8ff,#ffffff); width:min(92vw,560px); border:4px solid var(--line); border-radius:22px; padding:22px; text-align:center}
+  .sheet h2{font:800 26px/1.2 "Plus Jakarta Sans"; margin:0 0 10px; color:#0b2659}
+  .stats-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0 6px}
+  .pill{background:#fff; border:2px solid var(--line); border-radius:12px; padding:10px; font-weight:800}
+  .note{color:var(--sub); font-weight:700; margin-top:8px}
+  .modal-actions{display:flex; gap:10px; justify-content:center; margin-top:12px}
+</style>
+</head>
+<body>
+  <div class="studs" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="home-btn" href="index.html">🏠 Home</a>
+      <span class="tag">Factors & Multiples Challenge</span>
+    </div>
+
+    <section class="card">
+      <div class="head">
+        <h1 class="title">Factors & Multiples Adventure</h1>
+        <span class="badge">Level adapts Easy → Medium → Hard</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat">Score <small id="score">0</small></div>
+        <div class="stat">Question <small><span id="qNum">1</span>/50</small></div>
+        <div class="stat">Streak <small id="streak">0</small></div>
+        <div class="stat">Stage <small id="stage">🌟 Easy Level</small></div>
+      </div>
+
+      <div class="bar"><div id="barFill" class="fill">0%</div></div>
+
+      <div class="qbox">
+        <div id="qText" class="q-text">Find the factors of 12</div>
+        <input id="answer" class="answer" placeholder="Your answer" autocomplete="off" />
+        <div class="actions">
+          <button id="submit" class="btn">Submit ✅</button>
+          <button id="end" class="btn btn-ghost">End Practice ❌</button>
+        </div>
+        <div id="fb" class="feedback"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Report Modal -->
+  <div id="reportModal" class="modal">
+    <div class="sheet">
+      <h2>Adventure Report</h2>
+      <div id="reportNote" class="note"></div>
+      <div class="stats-grid">
+        <div class="pill">Final Score<br><span id="rScore">0</span></div>
+        <div class="pill">Correct<br><span id="rCorrect">0</span>/50</div>
+        <div class="pill">Accuracy<br><span id="rAcc">0%</span></div>
+        <div class="pill">Stage<br><span id="rStage">Easy</span></div>
+      </div>
+      <div class="modal-actions">
+        <a href="index.html" class="home-btn">🏠 Return Home</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+const MAX_Q=50;
+const levels={easy:{min:2,max:12,name:"🌟 Easy Level"},medium:{min:5,max:24,name:"⭐ Medium Level"},hard:{min:10,max:50,name:"👑 Hard Level"}};
+let game={q:1,score:0,streak:0,correct:0,stage:"easy",answer:[]};
+
+const ui={
+  score:document.getElementById("score"),
+  qNum:document.getElementById("qNum"),
+  streak:document.getElementById("streak"),
+  stage:document.getElementById("stage"),
+  barFill:document.getElementById("barFill"),
+  qText:document.getElementById("qText"),
+  ans:document.getElementById("answer"),
+  fb:document.getElementById("fb"),
+  modal:document.getElementById("reportModal"),
+  rScore:document.getElementById("rScore"),
+  rCorrect:document.getElementById("rCorrect"),
+  rAcc:document.getElementById("rAcc"),
+  rStage:document.getElementById("rStage"),
+  note:document.getElementById("reportNote")
+};
+
+function updateStage(){
+  if(game.q<=15)game.stage="easy";else if(game.q<=35)game.stage="medium";else game.stage="hard";
+  ui.stage.textContent=levels[game.stage].name;
+}
+function factors(n){let f=[];for(let i=1;i<=n;i++)if(n%i===0)f.push(i);return f;}
+function multiples(n,c){return Array.from({length:c},(_,i)=>n*(i+1));}
+
+function genQ(){
+  updateStage();
+  const lvl=levels[game.stage];
+  const type=["factors","multiples","common"][Math.floor(Math.random()*3)];
+  let q="",a=[];
+  if(type==="factors"){const n=Math.floor(Math.random()*(lvl.max-lvl.min+1))+lvl.min;q=`Find all factors of ${n}`;a=factors(n);}
+  else if(type==="multiples"){const n=Math.floor(Math.random()*10)+2;const c=game.stage==="easy"?5:game.stage==="medium"?6:8;q=`List first ${c} multiples of ${n}`;a=multiples(n,c);}
+  else{const n1=Math.floor(Math.random()*(lvl.max-lvl.min+1))+lvl.min;const n2=Math.floor(Math.random()*(lvl.max-lvl.min+1))+lvl.min;const f1=factors(n1),f2=factors(n2);a=f1.filter(x=>f2.includes(x));q=`Find common factors of ${n1} and ${n2}`;}
+  game.answer=a.sort((x,y)=>x-y);
+  ui.qText.textContent=q; ui.ans.value=""; ui.fb.textContent="";
+  updateHud();
+}
+
+function parseAns(str){return str.split(/[,\s]+/).map(x=>parseInt(x)).filter(n=>!isNaN(n)).sort((a,b)=>a-b);}
+function checkAns(){
+  const input=parseAns(ui.ans.value); if(!input.length)return;
+  const ok=JSON.stringify(input)===JSON.stringify(game.answer);
+  if(ok){game.score+=10;game.streak++;game.correct++;ui.fb.innerHTML=`<div class="ok">Correct! 🎉</div>`;}
+  else{game.streak=0;ui.fb.innerHTML=`<div class="no">Not quite. Answer: ${game.answer.join(", ")}</div>`;}
+  updateHud();
+  setTimeout(()=>{game.q++; if(game.q>MAX_Q){showReport(false);resetGame();} else genQ();},1500);
+}
+
+function updateHud(){
+  ui.score.textContent=game.score; ui.qNum.textContent=game.q; ui.streak.textContent=game.streak;
+  const pct=Math.round(((game.q-1)/MAX_Q)*100); ui.barFill.style.width=pct+"%"; ui.barFill.textContent=pct+"%";
+}
+
+function showReport(early){
+  const acc=game.q>1?Math.round((game.correct/(game.q-1))*100):0;
+  ui.rScore.textContent=game.score; ui.rCorrect.textContent=game.correct; ui.rAcc.textContent=acc+"%"; ui.rStage.textContent=levels[game.stage].name;
+  ui.note.textContent=early?`Practice ended early after ${game.q-1} of ${MAX_Q} questions.`:`Great work completing all ${MAX_Q}!`;
+  ui.modal.classList.add("show");
+}
+function resetGame(){game={q:1,score:0,streak:0,correct:0,stage:"easy",answer:[]};}
+
+document.getElementById("submit").addEventListener("click",checkAns);
+ui.ans.addEventListener("keydown",e=>{if(e.key==="Enter")checkAns();});
+document.getElementById("end").addEventListener("click",()=>{if(confirm("End practice early?")){showReport(true);resetGame();}});
+
+genQ();
+</script>
+</body>
+</html>
