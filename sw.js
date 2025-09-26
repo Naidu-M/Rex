@@ -1,6 +1,6 @@
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open("rexmath-cache-v2").then((cache) => {   // 👈 v2 instead of v1
+    caches.open("rexmath-cache-v3").then((cache) => {   // 👈 v3 instead of v2
       return cache.addAll([
         "index.html",
         "placevalue.html",
