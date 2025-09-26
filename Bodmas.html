@@ -471,15 +471,22 @@ setQuestion();
 </script>
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js', { scope: './' })
-        .catch(console.error);
+    navigator.serviceWorker.register('./sw.js', { scope: './' });
+
+    // Reload once when the new service worker activates
+    let refreshed = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshed) return;
+      refreshed = true;
+      window.location.reload();
     });
   }
 </script>
 
+
 </body>
 </html>
+
 
 
 
